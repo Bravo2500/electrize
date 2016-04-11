@@ -24,6 +24,23 @@ test('resolveRequiresFrom - relative imports are resolved relative to file', asy
 	]);
 });
 
+test('resolveAllRequiresFrom - recursively resolve imports from entry point', async (t) => {
+	const result = await electronify.resolveAllRequiresFrom(resolve(__dirname, 'fixtures/test3.js'));
+	t.deepEqual(
+		result.map(f => relative(__dirname, f)),
+		['fixtures/test3.js', 'fixtures/test2.js',
+		'fixtures/file2.js', 'fixtures/node_modules/file3/index.js']
+	);
+});
+
+test('resolveAllRequiresFrom - handles circular deps', async (t) => {
+	const result = await electronify.resolveAllRequiresFrom(resolve(__dirname, 'fixtures/circular.js'));
+	t.deepEqual(
+		result.map(f => relative(__dirname, f)),
+		['fixtures/circular.js', 'fixtures/circuled.js']
+	);
+});
+
 test('resolveRequiresIn - return array of all used files from entry point.', async (t) => {
 	const result = await electronify.resolveRequiresIn('./fixtures/test2.js');
 	t.deepEqual(
