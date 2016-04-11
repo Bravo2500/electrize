@@ -23,18 +23,26 @@ function detectRequires(source) {
 }
 
 function detectRequiresFrom(filename) {
-	const dir = dirname(filename);
-	const resolveModules = modules => modules.map(m => {
-		return m.startsWith('.') ? resolveFrom(dir, m) : m;
-	});
-
 	return readFile(filename, 'utf8')
-		.then(detective)
-		.then(resolveModules);
+		.then(detectRequires);
+}
+
+const resolveRequiresFrom = dir => modules => {
+	return modules.map(m => resolveFrom(dir, m));
+};
+
+function detectUsedFiles(entryPoint) {
+	const dir = dirname(entryPoint);
+
+	return detectRequiresFrom(entryPoint)
+		.then(removeBuiltins)
+		.then(resolveRequiresFrom(dir));
 }
 
 module.exports = {
+	detectUsedFiles,
 	detectRequires,
 	detectRequiresFrom,
-	removeBuiltins
+	removeBuiltins,
+	resolveRequiresFrom
 };
