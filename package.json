@@ -18,5 +18,9 @@
   "devDependencies": {
     "ava": "^0.14.0",
     "xo": "^0.14.0"
+  },
+  "dependencies": {
+    "detect-import-require": "^1.1.0",
+    "pify": "^2.3.0"
   }
 }
