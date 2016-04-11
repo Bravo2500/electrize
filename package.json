@@ -20,6 +20,8 @@
     "xo": "^0.14.0"
   },
   "dependencies": {
+    "arr-diff": "^2.0.0",
+    "builtin-modules": "^1.1.1",
     "detect-import-require": "^1.1.0",
     "pify": "^2.3.0"
   }
