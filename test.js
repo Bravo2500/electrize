@@ -24,8 +24,8 @@ test('resolveRequiresFrom - relative imports are resolved relative to file', asy
 	]);
 });
 
-test('detectUsedFiles - return array of all used files from entry point.', async (t) => {
-	const result = await electronify.detectUsedFiles('./fixtures/test2.js');
+test('resolveRequiresIn - return array of all used files from entry point.', async (t) => {
+	const result = await electronify.resolveRequiresIn('./fixtures/test2.js');
 	t.deepEqual(
 		result.map(f => relative(__dirname, f)),
 		['fixtures/file2.js', 'fixtures/node_modules/file3/index.js']);

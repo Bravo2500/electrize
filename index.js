@@ -31,7 +31,7 @@ const resolveRequiresFrom = dir => modules => {
 	return modules.map(m => resolveFrom(dir, m));
 };
 
-function detectUsedFiles(entryPoint) {
+function resolveRequiresIn(entryPoint) {
 	const dir = dirname(entryPoint);
 
 	return detectRequiresFrom(entryPoint)
@@ -40,7 +40,7 @@ function detectUsedFiles(entryPoint) {
 }
 
 module.exports = {
-	detectUsedFiles,
+	resolveRequiresIn,
 	detectRequires,
 	detectRequiresFrom,
 	removeBuiltins,
