@@ -1,3 +1,4 @@
+const resolve = require('path').resolve;
 const test = require('ava');
 const electronify = require('./');
 
@@ -8,7 +9,12 @@ test('detectRequires - return array of required modules.', t => {
 
 test('detectRequiresFrom - return array of required modules given filename.', async (t) => {
 	const result = await electronify.detectRequiresFrom('./fixtures/test.js');
-	t.deepEqual(result, ['a-module', './another-one']);
+	t.deepEqual(result, ['a-module', 'another-one']);
+});
+
+test('detectRequiresFrom - relative imports are resolved relative to file', async (t) => {
+	const result = await electronify.detectRequiresFrom('./fixtures/test2.js');
+	t.deepEqual(result, [resolve(__dirname, 'fixtures/file2.js')]);
 });
 
 test('removeBuiltins - remove electron & node builtins from array of module.', async (t) => {

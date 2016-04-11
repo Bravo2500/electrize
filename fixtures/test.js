@@ -1,2 +1,2 @@
 require('a-module');
-import './another-one';
+import 'another-one';
