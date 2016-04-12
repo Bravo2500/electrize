@@ -52,3 +52,8 @@ test('removeBuiltins - remove electron & node builtins from array of module.', t
 	const result = electronify.removeBuiltins(['ava', 'browser-window', 'xo', 'fs']);
 	t.deepEqual(result, ['ava', 'xo']);
 });
+
+test('electronify - copy all files to target folder', async (t) => {
+	const result = await electronify(resolve(__dirname, 'fixtures/test3.js'));
+	t.deepEqual(result, ['ava', 'xo']);
+});
