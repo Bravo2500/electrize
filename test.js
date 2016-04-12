@@ -3,6 +3,7 @@ const relative = require('path').relative;
 
 const pify = require('pify');
 const rimraf = pify(require('rimraf'));
+const touch = pify(require('touch'));
 const test = require('ava');
 const electronify = require('./');
 
@@ -56,13 +57,36 @@ test('removeBuiltins - remove electron & node builtins from array of module.', t
 });
 
 test('electronify - copy all files to target folder', async (t) => {
-	const result = await electronify(resolve(__dirname, 'fixtures/test3.js'));
-	await rimraf(resolve('dist'));
+	await rimraf(resolve('dist/test1'));
+	const result = await electronify(
+		resolve(__dirname, 'fixtures/test3.js'),
+		{outputFolder: resolve(__dirname, 'dist/test1')}
+	);
 	t.deepEqual(
 		result,
 		[{'test3.js': 'new'},
 		{'test2.js': 'new'},
 		{'file2.js': 'new'},
 		{'node_modules/file3/index.js': 'new'}]
+	);
+});
+
+test('electronify - upgraded all files in target folder if changed, or skip them', async (t) => {
+	await rimraf(resolve('dist/test2'));
+	await electronify(
+		resolve(__dirname, 'fixtures/test3.js'),
+		{outputFolder: resolve(__dirname, 'dist/test2')}
+	);
+	await touch(resolve('fixtures/test3.js'));
+	const result = await electronify(
+		resolve(__dirname, 'fixtures/test3.js'),
+		{outputFolder: 'dist/test2'}
+	);
+	t.deepEqual(
+		result,
+		[{'test3.js': 'changed'},
+		{'test2.js': 'skipped'},
+		{'file2.js': 'skipped'},
+		{'node_modules/file3/index.js': 'skipped'}]
 	);
 });

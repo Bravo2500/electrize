@@ -70,8 +70,10 @@ const electronifyModule = (inputFolder, outputFolder) => co.wrap(function * (mod
 	let state = null;
 	try {
 		const outputStat = yield stat(output);
-		if (outputStat.mtime < inputStat.mtime) {
+		if (outputStat.ctime < inputStat.ctime) {
 			state = 'changed';
+		} else {
+			state = 'skipped';
 		}
 	} catch (err) {
 		if (err.code === 'ENOENT') {
@@ -89,7 +91,7 @@ function * _electronify(entrypoint, options) {
 	const _options = options || {};
 	const modules = yield resolveAllRequiresFrom(entrypoint);
 	const outputFolder = _options.outputFolder || resolve('dist');
-	const inputFolder = _options.outputFolder || dirname(entrypoint);
+	const inputFolder = _options.inputFolder || dirname(entrypoint);
 
 	let isDir = true;
 	try {
