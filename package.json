@@ -24,6 +24,7 @@
     "builtin-modules": "^1.1.1",
     "co": "^4.6.0",
     "detect-import-require": "^1.1.0",
+    "mkdirp": "^0.5.1",
     "path-type": "^1.1.0",
     "pify": "^2.3.0",
     "pump": "^1.0.1",

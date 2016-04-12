@@ -13,14 +13,14 @@ const resolveFrom = require('resolve-from');
 const diff = require('arr-diff');
 const pathType = require('path-type');
 const _pump = require('pump');
+const _mkdirp = require('mkdirp');
 
 const electronBuiltins = require('./modules/electron-builtins');
 
 const createReadStream = fs.createReadStream;
-const createReadStream = fs.createReadStream;
 const createWriteStream = fs.createWriteStream;
 const readFile = pify(fs.readFile);
-const mkDir = pify(fs.mkDir);
+const mkdirp = pify(_mkdirp);
 const pump = pify(_pump);
 const builtins = electronBuiltins.concat(nodeBuiltins);
 
@@ -60,24 +60,38 @@ function * resolveAllRequiresFrom(entryPoint, results) {
 	return _results;
 }
 
+const electronifyModule = (inputFolder, outputFolder) => co.wrap(function * (mod) {
+	const input = relative(inputFolder, mod);
+	const output = resolve(outputFolder, input);
+	yield mkdirp(dirname(output));
+	const inputStream = createReadStream(mod);
+	const outputStream = createWriteStream(output);
+	yield pump(inputStream, outputStream);
+	return input;
+});
+
 function * _electronify(entrypoint, options) {
 	const _options = options || {};
 	const modules = yield resolveAllRequiresFrom(entrypoint);
 	const outputFolder = _options.outputFolder || resolve('dist');
 	const inputFolder = _options.outputFolder || dirname(entrypoint);
 
-	if (!(yield pathType.dir(outputFolder))) {
-		yield mkDir(pathType);
+	let isDir = true;
+	try {
+		isDir = yield pathType.dir(outputFolder);
+	} catch (err) {
+		yield mkdirp(outputFolder);
+		isDir = true;
 	}
 
-	const copyProcesses = modules.map(mod => {
-		const input = relative(inputFolder, mod);
-		const output = resolve(outputFolder, input);
-		const inputStream = createReadStream(input);
-		const outputStream = createWriteStream(output);
-		return pump(inputStream, outputStream);
-	});
-	return yield copyProcesses;
+	if (!isDir) {
+		throw new Error('Output folder exists and is not a directory.');
+	}
+
+	const electronifyProcess = modules.map(
+		electronifyModule(inputFolder, outputFolder)
+	);
+	return yield electronifyProcess;
 }
 
 const electronify = module.exports = co.wrap(_electronify);
