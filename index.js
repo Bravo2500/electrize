@@ -61,35 +61,39 @@ function * resolveAllRequiresFrom(entryPoint, results) {
 	return _results;
 }
 
-const electrizeModule = (inputFolder, outputFolder, callback) => co.wrap(function * (mod) {
-	const input = relative(inputFolder, mod);
-	const output = resolve(outputFolder, input);
-	yield mkdirp(dirname(output));
-	const inputStat = yield stat(mod);
+const electrizeModule = (inputFolder, outputFolder, callback, transformers) => co.wrap(
+	function * (mod) {
+		const input = relative(inputFolder, mod);
+		const output = resolve(outputFolder, input);
+		yield mkdirp(dirname(output));
+		const inputStat = yield stat(mod);
 
-	let state = null;
-	try {
-		const outputStat = yield stat(output);
-		if (outputStat.ctime < inputStat.ctime) {
-			state = 'changed';
-		} else {
-			state = 'skipped';
+		let state = null;
+		try {
+			const outputStat = yield stat(output);
+			if (outputStat.ctime < inputStat.ctime) {
+				state = 'changed';
+			} else {
+				state = 'skipped';
+			}
+		} catch (err) {
+			if (err.code === 'ENOENT') {
+				state = 'new';
+			}
 		}
-	} catch (err) {
-		if (err.code === 'ENOENT') {
-			state = 'new';
-		}
-	}
 
-	if (state !== 'skipped') {
-		const inputStream = createReadStream(mod);
-		const outputStream = createWriteStream(output);
-		yield pump(inputStream, outputStream);
+		if (state !== 'skipped') {
+			const streams = [createReadStream(mod)]
+				.concat(transformers.map(t => t(mod)))
+				.concat(createWriteStream(output));
+
+			yield pump(...streams);
+		}
+		const result = {[input]: state};
+		callback(result);
+		return result;
 	}
-	const result = {[input]: state};
-	callback(result);
-	return result;
-});
+);
 
 function * electrize(entrypoint, options) {
 	const _options = options || {};
@@ -97,6 +101,7 @@ function * electrize(entrypoint, options) {
 	const outputFolder = _options.outputFolder || resolve('dist');
 	const inputFolder = _options.inputFolder || dirname(entrypoint);
 	const callback = _options.callback || (() => {});
+	const transformers = _options.transformers || [];
 
 	let isDir = true;
 	try {
@@ -111,7 +116,7 @@ function * electrize(entrypoint, options) {
 	}
 
 	const electrizeProcess = modules.map(
-		electrizeModule(inputFolder, outputFolder, callback)
+		electrizeModule(inputFolder, outputFolder, callback, transformers)
 	);
 	return yield electrizeProcess;
 }

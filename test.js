@@ -1,7 +1,10 @@
 const resolve = require('path').resolve;
 const relative = require('path').relative;
+const fs = require('fs');
 
 const pify = require('pify');
+const readFile = pify(fs.readFile);
+const brfs = require('brfs');
 const rimraf = pify(require('rimraf'));
 const touch = pify(require('touch'));
 const test = require('ava');
@@ -116,3 +119,21 @@ test('electrize - emit an event on each electrize module', async (t) => {
 		{'test3.js': 'new'}]
 	);
 });
+
+test('electrize - support browserify transforms', async (t) => {
+	await rimraf(resolve('dist/test4'));
+	await electrize(
+		resolve(__dirname, 'fixtures/brfsed.js'),
+		{
+			outputFolder: resolve(__dirname, 'dist/test4'),
+			transformers: [brfs]
+		}
+	);
+
+	const content = await readFile(resolve(__dirname, 'dist/test4/brfsed.js'), 'utf8');
+	t.is(
+		content,
+		'\nconst test = "this is a test\\n";\n'
+	);
+});
+
