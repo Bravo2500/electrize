@@ -90,3 +90,29 @@ test('electronify - upgraded all files in target folder if changed, or skip them
 		{'node_modules/file3/index.js': 'skipped'}]
 	);
 });
+
+test('electronify - emit an event on each electronify module', async (t) => {
+	await rimraf(resolve('dist/test3'));
+	const events = [];
+	await electronify(
+		resolve(__dirname, 'fixtures/test3.js'),
+		{
+			outputFolder: resolve(__dirname, 'dist/test3'),
+			callback: m => events.push(m)
+		}
+	);
+
+	events.sort((a, b) => {
+		if (Object.keys(a)[0] === Object.keys(b)[0]) {
+			return 0;
+		}
+		return Object.keys(a)[0] < Object.keys(b)[0] ? -1 : 1;
+	});
+	t.deepEqual(
+		events,
+		[{'file2.js': 'new'},
+		{'node_modules/file3/index.js': 'new'},
+		{'test2.js': 'new'},
+		{'test3.js': 'new'}]
+	);
+});

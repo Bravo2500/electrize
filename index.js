@@ -61,7 +61,7 @@ function * resolveAllRequiresFrom(entryPoint, results) {
 	return _results;
 }
 
-const electronifyModule = (inputFolder, outputFolder) => co.wrap(function * (mod) {
+const electronifyModule = (inputFolder, outputFolder, callback) => co.wrap(function * (mod) {
 	const input = relative(inputFolder, mod);
 	const output = resolve(outputFolder, input);
 	yield mkdirp(dirname(output));
@@ -86,8 +86,9 @@ const electronifyModule = (inputFolder, outputFolder) => co.wrap(function * (mod
 		const outputStream = createWriteStream(output);
 		yield pump(inputStream, outputStream);
 	}
-
-	return {[input]: state};
+	const result = {[input]: state};
+	callback(result);
+	return result;
 });
 
 function * electronify(entrypoint, options) {
@@ -95,6 +96,7 @@ function * electronify(entrypoint, options) {
 	const modules = yield resolveAllRequiresFrom(entrypoint);
 	const outputFolder = _options.outputFolder || resolve('dist');
 	const inputFolder = _options.inputFolder || dirname(entrypoint);
+	const callback = _options.callback || (() => {});
 
 	let isDir = true;
 	try {
@@ -109,7 +111,7 @@ function * electronify(entrypoint, options) {
 	}
 
 	const electronifyProcess = modules.map(
-		electronifyModule(inputFolder, outputFolder)
+		electronifyModule(inputFolder, outputFolder, callback)
 	);
 	return yield electronifyProcess;
 }
