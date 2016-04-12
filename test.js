@@ -5,22 +5,22 @@ const pify = require('pify');
 const rimraf = pify(require('rimraf'));
 const touch = pify(require('touch'));
 const test = require('ava');
-const electronify = require('./');
+const electrize = require('./');
 
 test('detectRequires - return array of required modules.', t => {
-	const result = electronify.detectRequires('require("a-module"); import "./another-one";');
+	const result = electrize.detectRequires('require("a-module"); import "./another-one";');
 	t.deepEqual(result, ['a-module', './another-one']);
 });
 
 test('detectRequiresFrom - return array of required modules given filename.', async (t) => {
-	const result = await electronify.detectRequiresFrom('./fixtures/test.js');
+	const result = await electrize.detectRequiresFrom('./fixtures/test.js');
 	t.deepEqual(result, ['a-module', 'another-one']);
 });
 
 test('resolveRequiresFrom - relative imports are resolved relative to file', async (t) => {
 	const dir = resolve(__dirname, 'fixtures');
 
-	const result = await electronify.resolveRequiresFrom(dir)(['./file2', 'file3']);
+	const result = await electrize.resolveRequiresFrom(dir)(['./file2', 'file3']);
 	t.deepEqual(result, [
 		resolve(__dirname, 'fixtures/file2.js'),
 		resolve(__dirname, 'fixtures/node_modules/file3/index.js')
@@ -28,7 +28,7 @@ test('resolveRequiresFrom - relative imports are resolved relative to file', asy
 });
 
 test('resolveAllRequiresFrom - recursively resolve imports from entry point', async (t) => {
-	const result = await electronify.resolveAllRequiresFrom(resolve(__dirname, 'fixtures/test3.js'));
+	const result = await electrize.resolveAllRequiresFrom(resolve(__dirname, 'fixtures/test3.js'));
 	t.deepEqual(
 		result.map(f => relative(__dirname, f)),
 		['fixtures/test3.js', 'fixtures/test2.js',
@@ -37,7 +37,7 @@ test('resolveAllRequiresFrom - recursively resolve imports from entry point', as
 });
 
 test('resolveAllRequiresFrom - handles circular deps', async (t) => {
-	const result = await electronify.resolveAllRequiresFrom(resolve(__dirname, 'fixtures/circular.js'));
+	const result = await electrize.resolveAllRequiresFrom(resolve(__dirname, 'fixtures/circular.js'));
 	t.deepEqual(
 		result.map(f => relative(__dirname, f)),
 		['fixtures/circular.js', 'fixtures/circuled.js']
@@ -45,20 +45,20 @@ test('resolveAllRequiresFrom - handles circular deps', async (t) => {
 });
 
 test('resolveRequiresIn - return array of all used files from entry point.', async (t) => {
-	const result = await electronify.resolveRequiresIn('./fixtures/test2.js');
+	const result = await electrize.resolveRequiresIn('./fixtures/test2.js');
 	t.deepEqual(
 		result.map(f => relative(__dirname, f)),
 		['fixtures/file2.js', 'fixtures/node_modules/file3/index.js']);
 });
 
 test('removeBuiltins - remove electron & node builtins from array of module.', t => {
-	const result = electronify.removeBuiltins(['ava', 'browser-window', 'xo', 'fs']);
+	const result = electrize.removeBuiltins(['ava', 'browser-window', 'xo', 'fs']);
 	t.deepEqual(result, ['ava', 'xo']);
 });
 
-test('electronify - copy all files to target folder', async (t) => {
+test('electrize - copy all files to target folder', async (t) => {
 	await rimraf(resolve('dist/test1'));
-	const result = await electronify(
+	const result = await electrize(
 		resolve(__dirname, 'fixtures/test3.js'),
 		{outputFolder: resolve(__dirname, 'dist/test1')}
 	);
@@ -71,14 +71,14 @@ test('electronify - copy all files to target folder', async (t) => {
 	);
 });
 
-test('electronify - upgraded all files in target folder if changed, or skip them', async (t) => {
+test('electrize - upgraded all files in target folder if changed, or skip them', async (t) => {
 	await rimraf(resolve('dist/test2'));
-	await electronify(
+	await electrize(
 		resolve(__dirname, 'fixtures/test3.js'),
 		{outputFolder: resolve(__dirname, 'dist/test2')}
 	);
 	await touch(resolve('fixtures/test3.js'));
-	const result = await electronify(
+	const result = await electrize(
 		resolve(__dirname, 'fixtures/test3.js'),
 		{outputFolder: 'dist/test2'}
 	);
@@ -91,10 +91,10 @@ test('electronify - upgraded all files in target folder if changed, or skip them
 	);
 });
 
-test('electronify - emit an event on each electronify module', async (t) => {
+test('electrize - emit an event on each electrize module', async (t) => {
 	await rimraf(resolve('dist/test3'));
 	const events = [];
-	await electronify(
+	await electrize(
 		resolve(__dirname, 'fixtures/test3.js'),
 		{
 			outputFolder: resolve(__dirname, 'dist/test3'),

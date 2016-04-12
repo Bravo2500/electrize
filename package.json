@@ -1,8 +1,8 @@
 {
-  "name": "electronify",
+  "name": "electrize",
   "version": "0.1.0",
   "description": "electron file packer",
-  "repository": "parro-it/electronify",
+  "repository": "parro-it/electrize",
   "license": "MIT",
   "author": "parro-it",
   "scripts": {

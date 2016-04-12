@@ -1,21 +1,21 @@
-# electronify
+# electrize
 
 electron file packer
 
-[![Travis Build Status](https://img.shields.io/travis/parro-it/electronify.svg)](http://travis-ci.org/parro-it/electronify)
-[![NPM module](https://img.shields.io/npm/v/electronify.svg)](https://npmjs.org/package/electronify)
-[![NPM downloads](https://img.shields.io/npm/dt/electronify.svg)](https://npmjs.org/package/electronify)
+[![Travis Build Status](https://img.shields.io/travis/parro-it/electrize.svg)](http://travis-ci.org/parro-it/electrize)
+[![NPM module](https://img.shields.io/npm/v/electrize.svg)](https://npmjs.org/package/electrize)
+[![NPM downloads](https://img.shields.io/npm/dt/electrize.svg)](https://npmjs.org/package/electrize)
 
 # Installation
 
 ```bash
-npm install --save electronify
+npm install --save electrize
 ```
 
 ## Usage
 
 ```js
-  const electronify = require('electronify');
+  const electrize = require('electrize');
 ```
 
 # License

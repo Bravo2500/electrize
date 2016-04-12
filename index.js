@@ -61,7 +61,7 @@ function * resolveAllRequiresFrom(entryPoint, results) {
 	return _results;
 }
 
-const electronifyModule = (inputFolder, outputFolder, callback) => co.wrap(function * (mod) {
+const electrizeModule = (inputFolder, outputFolder, callback) => co.wrap(function * (mod) {
 	const input = relative(inputFolder, mod);
 	const output = resolve(outputFolder, input);
 	yield mkdirp(dirname(output));
@@ -91,7 +91,7 @@ const electronifyModule = (inputFolder, outputFolder, callback) => co.wrap(funct
 	return result;
 });
 
-function * electronify(entrypoint, options) {
+function * electrize(entrypoint, options) {
 	const _options = options || {};
 	const modules = yield resolveAllRequiresFrom(entrypoint);
 	const outputFolder = _options.outputFolder || resolve('dist');
@@ -110,13 +110,13 @@ function * electronify(entrypoint, options) {
 		throw new Error('Output folder exists and is not a directory.');
 	}
 
-	const electronifyProcess = modules.map(
-		electronifyModule(inputFolder, outputFolder, callback)
+	const electrizeProcess = modules.map(
+		electrizeModule(inputFolder, outputFolder, callback)
 	);
-	return yield electronifyProcess;
+	return yield electrizeProcess;
 }
 
-module.exports = Object.assign(co.wrap(electronify), {
+module.exports = Object.assign(co.wrap(electrize), {
 	resolveAllRequiresFrom: co.wrap(resolveAllRequiresFrom),
 	resolveRequiresIn: co.wrap(resolveRequiresIn),
 	detectRequires,
