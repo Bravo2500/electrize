@@ -29,35 +29,31 @@ function removeBuiltins(results) {
 	return diff(results, builtins);
 }
 
-function detectRequires(source) {
-	return detective(source);
-}
-
-function * detectRequiresFrom(filename) {
+function * detectRequires(filename) {
 	const content = yield readFile(filename, 'utf8');
-	return detectRequires(content);
+	return detective(content);
 }
 
 const resolveRequiresFrom = dir => modules => {
 	return modules.map(m => resolveFrom(dir, m));
 };
 
-function * resolveRequiresIn(entryPoint) {
-	const resolveRequires = resolveRequiresFrom(dirname(entryPoint));
+function * resolveRequiresIn(file) {
+	const resolveRequires = resolveRequiresFrom(dirname(file));
 
-	const modules = yield detectRequiresFrom(entryPoint);
+	const modules = yield detectRequires(file);
 	const userLandModules = removeBuiltins(modules);
 	return resolveRequires(userLandModules);
 }
 
-function * resolveAllRequiresFrom(entryPoint, results) {
+function * detectRequiresDeep(entryPoint, results) {
 	const _results = results || [];
 	if (_results.indexOf(entryPoint) !== -1) {
 		return [];
 	}
 	_results.push(entryPoint);
 	const modules = yield resolveRequiresIn(entryPoint);
-	yield modules.map(m => resolveAllRequiresFrom(m, _results));
+	yield modules.map(m => detectRequiresDeep(m, _results));
 	return _results;
 }
 
@@ -97,7 +93,7 @@ const electrizeModule = (inputFolder, outputFolder, callback, transformers) => c
 
 function * electrize(entrypoint, options) {
 	const _options = options || {};
-	const modules = yield resolveAllRequiresFrom(entrypoint);
+	const modules = yield detectRequiresDeep(entrypoint);
 	const outputFolder = _options.outputFolder || resolve('dist');
 	const inputFolder = _options.inputFolder || dirname(entrypoint);
 	const callback = _options.callback || (() => {});
@@ -122,10 +118,9 @@ function * electrize(entrypoint, options) {
 }
 
 module.exports = Object.assign(co.wrap(electrize), {
-	resolveAllRequiresFrom: co.wrap(resolveAllRequiresFrom),
+	detectRequiresDeep: co.wrap(detectRequiresDeep),
 	resolveRequiresIn: co.wrap(resolveRequiresIn),
-	detectRequires,
-	detectRequiresFrom: co.wrap(detectRequiresFrom),
+	detectRequires: co.wrap(detectRequires),
 	removeBuiltins,
 	resolveRequiresFrom
 });

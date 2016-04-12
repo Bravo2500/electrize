@@ -10,13 +10,8 @@ const touch = pify(require('touch'));
 const test = require('ava');
 const electrize = require('./');
 
-test('detectRequires - return array of required modules.', t => {
-	const result = electrize.detectRequires('require("a-module"); import "./another-one";');
-	t.deepEqual(result, ['a-module', './another-one']);
-});
-
-test('detectRequiresFrom - return array of required modules given filename.', async (t) => {
-	const result = await electrize.detectRequiresFrom('./fixtures/test.js');
+test('detectRequires - return array of required modules given filename.', async (t) => {
+	const result = await electrize.detectRequires('./fixtures/test.js');
 	t.deepEqual(result, ['a-module', 'another-one']);
 });
 
@@ -30,8 +25,8 @@ test('resolveRequiresFrom - relative imports are resolved relative to file', asy
 	]);
 });
 
-test('resolveAllRequiresFrom - recursively resolve imports from entry point', async (t) => {
-	const result = await electrize.resolveAllRequiresFrom(resolve(__dirname, 'fixtures/test3.js'));
+test('detectRequiresDeep - recursively resolve imports from entry point', async (t) => {
+	const result = await electrize.detectRequiresDeep(resolve(__dirname, 'fixtures/test3.js'));
 	t.deepEqual(
 		result.map(f => relative(__dirname, f)),
 		['fixtures/test3.js', 'fixtures/test2.js',
@@ -39,8 +34,8 @@ test('resolveAllRequiresFrom - recursively resolve imports from entry point', as
 	);
 });
 
-test('resolveAllRequiresFrom - handles circular deps', async (t) => {
-	const result = await electrize.resolveAllRequiresFrom(resolve(__dirname, 'fixtures/circular.js'));
+test('detectRequiresDeep - handles circular deps', async (t) => {
+	const result = await electrize.detectRequiresDeep(resolve(__dirname, 'fixtures/circular.js'));
 	t.deepEqual(
 		result.map(f => relative(__dirname, f)),
 		['fixtures/circular.js', 'fixtures/circuled.js']
