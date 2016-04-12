@@ -87,7 +87,7 @@ const electronifyModule = (inputFolder, outputFolder) => co.wrap(function * (mod
 	return {[input]: state};
 });
 
-function * _electronify(entrypoint, options) {
+function * electronify(entrypoint, options) {
 	const _options = options || {};
 	const modules = yield resolveAllRequiresFrom(entrypoint);
 	const outputFolder = _options.outputFolder || resolve('dist');
@@ -111,9 +111,7 @@ function * _electronify(entrypoint, options) {
 	return yield electronifyProcess;
 }
 
-const electronify = module.exports = co.wrap(_electronify);
-
-Object.assign(electronify, {
+module.exports = Object.assign(co.wrap(electronify), {
 	resolveAllRequiresFrom: co.wrap(resolveAllRequiresFrom),
 	resolveRequiresIn: co.wrap(resolveRequiresIn),
 	detectRequires,
