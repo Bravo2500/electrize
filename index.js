@@ -81,9 +81,12 @@ const electronifyModule = (inputFolder, outputFolder) => co.wrap(function * (mod
 		}
 	}
 
-	const inputStream = createReadStream(mod);
-	const outputStream = createWriteStream(output);
-	yield pump(inputStream, outputStream);
+	if (state !== 'skipped') {
+		const inputStream = createReadStream(mod);
+		const outputStream = createWriteStream(output);
+		yield pump(inputStream, outputStream);
+	}
+
 	return {[input]: state};
 });
 
