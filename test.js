@@ -1,6 +1,8 @@
 const resolve = require('path').resolve;
 const relative = require('path').relative;
 
+const pify = require('pify');
+const rimraf = pify(require('rimraf'));
 const test = require('ava');
 const electronify = require('./');
 
@@ -55,8 +57,12 @@ test('removeBuiltins - remove electron & node builtins from array of module.', t
 
 test('electronify - copy all files to target folder', async (t) => {
 	const result = await electronify(resolve(__dirname, 'fixtures/test3.js'));
+	await rimraf(resolve('dist'));
 	t.deepEqual(
 		result,
-		['test3.js', 'test2.js', 'file2.js', 'node_modules/file3/index.js']
+		[{'test3.js': 'new'},
+		{'test2.js': 'new'},
+		{'file2.js': 'new'},
+		{'node_modules/file3/index.js': 'new'}]
 	);
 });

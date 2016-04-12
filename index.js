@@ -20,6 +20,7 @@ const electronBuiltins = require('./modules/electron-builtins');
 const createReadStream = fs.createReadStream;
 const createWriteStream = fs.createWriteStream;
 const readFile = pify(fs.readFile);
+const stat = pify(fs.stat);
 const mkdirp = pify(_mkdirp);
 const pump = pify(_pump);
 const builtins = electronBuiltins.concat(nodeBuiltins);
@@ -64,10 +65,24 @@ const electronifyModule = (inputFolder, outputFolder) => co.wrap(function * (mod
 	const input = relative(inputFolder, mod);
 	const output = resolve(outputFolder, input);
 	yield mkdirp(dirname(output));
+	const inputStat = yield stat(mod);
+
+	let state = null;
+	try {
+		const outputStat = yield stat(output);
+		if (outputStat.mtime < inputStat.mtime) {
+			state = 'changed';
+		}
+	} catch (err) {
+		if (err.code === 'ENOENT') {
+			state = 'new';
+		}
+	}
+
 	const inputStream = createReadStream(mod);
 	const outputStream = createWriteStream(output);
 	yield pump(inputStream, outputStream);
-	return input;
+	return {[input]: state};
 });
 
 function * _electronify(entrypoint, options) {
